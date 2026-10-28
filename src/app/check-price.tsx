@@ -8,13 +8,43 @@ import {
   useColorScheme,
 } from "react-native";
 
+import { useState } from "react";
+
+import StoreDropdown from "@/components/StoreDropdown";
 import { Colors, ThemeColors } from "@/constants/theme";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { Store } from "@/types/store";
+
+const defaultStores: Store[] = [
+  { id: "market-basket", name: "Market Basket" },
+  { id: "aldi", name: "Aldi" },
+  { id: "walmart", name: "Walmart" },
+  { id: "target", name: "Target" },
+  { id: "stop-and-shop", name: "Stop & Shop" },
+  { id: "trader-joes", name: "Trader Joe's" },
+];
 
 export default function CheckPriceScreen() {
   const colorScheme = useColorScheme();
   const colors = colorScheme === "dark" ? Colors.dark : Colors.light;
   const styles = createStyles(colors);
+
+  const [product, setProduct] = useState("");
+  const [price, setPrice] = useState("");
+  const [store, setStore] = useState("");
+  const [stores, setStores] = useState<Store[]>(defaultStores);
+
+  const handleCheckDeal = () => {
+    console.log("Product:", product);
+    console.log("Price:", price);
+  };
+
+  const handleAddStore = (newStore: Store) => {
+    setStores((prevStores) => [...prevStores, newStore]);
+
+    setStore(newStore.name);
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -30,8 +60,10 @@ export default function CheckPriceScreen() {
 
           <TextInput
             style={styles.input}
+            value={product}
+            onChangeText={setProduct}
             placeholder="e.g. Chicken Breast"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
@@ -39,10 +71,13 @@ export default function CheckPriceScreen() {
         <View style={styles.fieldContainer}>
           <Text style={styles.label}>Store</Text>
 
-          <Pressable style={styles.selectInput}>
-            <Text style={styles.selectText}>Select a store</Text>
-            <Text style={styles.arrow}>⌄</Text>
-          </Pressable>
+          <StoreDropdown
+            stores={stores}
+            value={store}
+            onChange={(selectedStore) => setStore(selectedStore.name)}
+            onAddStore={handleAddStore}
+            colors={colors}
+          />
         </View>
 
         {/* Price */}
@@ -54,8 +89,10 @@ export default function CheckPriceScreen() {
 
             <TextInput
               style={styles.priceInput}
+              value={price}
+              onChangeText={setPrice}
               placeholder="0.00"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textSecondary}
               keyboardType="decimal-pad"
             />
           </View>
@@ -72,7 +109,7 @@ export default function CheckPriceScreen() {
         </View>
 
         {/* Check Button */}
-        <Pressable style={styles.checkButton}>
+        <Pressable style={styles.checkButton} onPress={handleCheckDeal}>
           <Text style={styles.checkButtonText}>Check Deal</Text>
         </Pressable>
       </ScrollView>
