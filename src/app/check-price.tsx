@@ -15,6 +15,7 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Store } from "@/types/store";
+import { useRouter } from "expo-router";
 
 const unitOptions = [
   { id: "item", label: "Per item" },
@@ -38,8 +39,10 @@ const defaultStores: Store[] = [
 export default function CheckPriceScreen() {
   const colors = useTheme();
   const styles = createStyles(colors);
+  const router = useRouter();
 
   const [product, setProduct] = useState("");
+  const [brand, setBrand] = useState("");
   const [price, setPrice] = useState("");
   const [store, setStore] = useState("");
   const [stores, setStores] = useState<Store[]>(defaultStores);
@@ -122,10 +125,16 @@ export default function CheckPriceScreen() {
       return;
     }
 
-    console.log("Product:", product.trim());
-    console.log("Store:", store);
-    console.log("Price:", price);
-    console.log("Unit:", unit);
+    router.push({
+      pathname: "/price-results",
+      params: {
+        product: product.trim(),
+        brand: brand.trim(),
+        store,
+        price,
+        unit,
+      },
+    });
   };
 
   const handleAddStore = (newStore: Store) => {
@@ -157,6 +166,18 @@ export default function CheckPriceScreen() {
           {touched.product && (
             <ErrorMessage message={errors.product} color="#DC2626" />
           )}
+        </View>
+
+        {/* Brand */}
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Brand (Optional)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Great Value, Perdue"
+            placeholderTextColor={colors.textSecondary}
+            value={brand}
+            onChangeText={setBrand}
+          />
         </View>
 
         {/* Store */}
