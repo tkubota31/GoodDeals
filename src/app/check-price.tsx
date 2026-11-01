@@ -5,12 +5,12 @@ import {
   Text,
   TextInput,
   View,
-  useColorScheme,
 } from "react-native";
 
 import Dropdown from "@/components/Dropdown";
 import StoreDropdown from "@/components/StoreDropdown";
-import { Colors, ThemeColors } from "@/constants/theme";
+import type { ThemeColors } from "@/constants/theme";
+import { useTheme } from "@/context/ThemeContext";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -36,8 +36,7 @@ const defaultStores: Store[] = [
 ];
 
 export default function CheckPriceScreen() {
-  const colorScheme = useColorScheme();
-  const colors = colorScheme === "dark" ? Colors.dark : Colors.light;
+  const colors = useTheme();
   const styles = createStyles(colors);
 
   const [product, setProduct] = useState("");
@@ -46,9 +45,87 @@ export default function CheckPriceScreen() {
   const [stores, setStores] = useState<Store[]>(defaultStores);
   const [unit, setUnit] = useState("");
 
+  const [touched, setTouched] = useState({
+    product: false,
+    store: false,
+    price: false,
+    unit: false,
+  });
+
+  const getProductError = (value: string) => {
+    if (!value.trim()) {
+      return "Please enter a product name.";
+    }
+
+    return "";
+  };
+
+  const getStoreError = (value: string) => {
+    if (!value) {
+      return "Please select a store.";
+    }
+
+    return "";
+  };
+
+  const getUnitError = (value: string) => {
+    if (!value) {
+      return "Please select a unit.";
+    }
+
+    return "";
+  };
+
+  const getPriceError = (value: string) => {
+    const priceRegex = /^\d+(\.\d{1,2})?$/;
+
+    if (!value.trim()) {
+      return "Please enter a price.";
+    }
+
+    if (!priceRegex.test(value) || Number(value) <= 0) {
+      return "Enter a valid price greater than zero.";
+    }
+
+    return "";
+  };
+
+  const handleBlur = (field: keyof typeof touched) => {
+    setTouched((prev) => ({
+      ...prev,
+      [field]: true,
+    }));
+  };
+
+  const errors = {
+    product: getProductError(product),
+    store: getStoreError(store),
+    price: getPriceError(price),
+    unit: getUnitError(unit),
+  };
+
   const handleCheckDeal = () => {
-    console.log("Product:", product);
+    setTouched({
+      product: true,
+      store: true,
+      price: true,
+      unit: true,
+    });
+
+    const isValid =
+      !getProductError(product) &&
+      !getStoreError(store) &&
+      !getPriceError(price) &&
+      !getUnitError(unit);
+
+    if (!isValid) {
+      return;
+    }
+
+    console.log("Product:", product.trim());
+    console.log("Store:", store);
     console.log("Price:", price);
+    console.log("Unit:", unit);
   };
 
   const handleAddStore = (newStore: Store) => {
@@ -75,7 +152,11 @@ export default function CheckPriceScreen() {
             onChangeText={setProduct}
             placeholder="e.g. Chicken Breast"
             placeholderTextColor={colors.textSecondary}
+            onBlur={() => handleBlur("product")}
           />
+          {touched.product && (
+            <ErrorMessage message={errors.product} color="#DC2626" />
+          )}
         </View>
 
         {/* Store */}
@@ -85,9 +166,15 @@ export default function CheckPriceScreen() {
           <StoreDropdown
             stores={stores}
             value={store}
-            onChange={(selectedStore) => setStore(selectedStore.name)}
+            onChange={(selectedStore) => {
+              setStore(selectedStore.name);
+              handleBlur("store");
+            }}
             onAddStore={handleAddStore}
           />
+          {touched.store && (
+            <ErrorMessage message={errors.store} color="#DC2626" />
+          )}
         </View>
 
         {/* Price */}
@@ -104,8 +191,12 @@ export default function CheckPriceScreen() {
               placeholder="0.00"
               placeholderTextColor={colors.textSecondary}
               keyboardType="decimal-pad"
+              onBlur={() => handleBlur("price")}
             />
           </View>
+          {touched.price && (
+            <ErrorMessage message={errors.price} color="#DC2626" />
+          )}
         </View>
 
         {/* Unit */}
@@ -116,8 +207,14 @@ export default function CheckPriceScreen() {
             options={unitOptions}
             value={unit}
             placeholder="Select a unit"
-            onChange={(option) => setUnit(option.label)}
+            onChange={(option) => {
+              setUnit(option.label);
+              handleBlur("unit");
+            }}
           />
+          {touched.unit && (
+            <ErrorMessage message={errors.unit} color="#DC2626" />
+          )}
         </View>
 
         {/* Check Button */}
@@ -225,3 +322,9 @@ const createStyles = (colors: ThemeColors) =>
       fontWeight: "700",
     },
   });
+
+function ErrorMessage({ message, color }: { message: string; color: string }) {
+  if (!message) return null;
+
+  return <Text style={{ color, fontSize: 13, marginTop: 6 }}>{message}</Text>;
+}
