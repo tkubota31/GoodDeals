@@ -2,6 +2,9 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useColorScheme } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+
+import { AppThemeProvider } from "@/context/ThemeContext";
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -9,20 +12,15 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <SafeAreaProvider>
-        <Stack
-          screenOptions={{
-            headerShown: true,
-            headerStyle: {
-              backgroundColor: "#FFFFFF",
-            },
-            headerTintColor: "#111111",
-            headerTitleStyle: {
-              color: "#111111",
-            },
-          }}
-        />
-      </SafeAreaProvider>
+      <AppThemeProvider>
+        <SafeAreaProvider>
+          <Stack
+            screenOptions={{
+              headerShown: true,
+            }}
+          />
+        </SafeAreaProvider>
+      </AppThemeProvider>
     </ThemeProvider>
   );
 }
