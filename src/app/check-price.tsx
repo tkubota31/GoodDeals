@@ -8,13 +8,23 @@ import {
   useColorScheme,
 } from "react-native";
 
-import { useState } from "react";
-
+import Dropdown from "@/components/Dropdown";
 import StoreDropdown from "@/components/StoreDropdown";
 import { Colors, ThemeColors } from "@/constants/theme";
+import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Store } from "@/types/store";
+
+const unitOptions = [
+  { id: "item", label: "Per item" },
+  { id: "lb", label: "Per lb" },
+  { id: "oz", label: "Per oz" },
+  { id: "dozen", label: "Per dozen" },
+  { id: "gallon", label: "Per gallon" },
+  { id: "liter", label: "Per liter" },
+  { id: "pack", label: "Per pack" },
+];
 
 const defaultStores: Store[] = [
   { id: "market-basket", name: "Market Basket" },
@@ -34,6 +44,7 @@ export default function CheckPriceScreen() {
   const [price, setPrice] = useState("");
   const [store, setStore] = useState("");
   const [stores, setStores] = useState<Store[]>(defaultStores);
+  const [unit, setUnit] = useState("");
 
   const handleCheckDeal = () => {
     console.log("Product:", product);
@@ -76,7 +87,6 @@ export default function CheckPriceScreen() {
             value={store}
             onChange={(selectedStore) => setStore(selectedStore.name)}
             onAddStore={handleAddStore}
-            colors={colors}
           />
         </View>
 
@@ -102,10 +112,12 @@ export default function CheckPriceScreen() {
         <View style={styles.fieldContainer}>
           <Text style={styles.label}>Unit</Text>
 
-          <Pressable style={styles.selectInput}>
-            <Text style={styles.selectText}>Per item</Text>
-            <Text style={styles.arrow}>⌄</Text>
-          </Pressable>
+          <Dropdown
+            options={unitOptions}
+            value={unit}
+            placeholder="Select a unit"
+            onChange={(option) => setUnit(option.label)}
+          />
         </View>
 
         {/* Check Button */}
